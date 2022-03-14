@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h1>{% block title %}Input Time{% endblock %}</h1>
+{% endblock %}
+{% block content %}
+    {% if g.user %}
+        {{ g.user['check_in_state'] }}
+          <p>Welcome {{ g.user['firstname'] }},</p>
+             {% if g.user['check_in_state'] %}
+               <p> You checked in at {{ time_in_loc }} <br />
+                   would you like to <a href="{{ url_for('auth.checkout') }}">check out?</a></p>
+            {% else %}
+               <p> You checked in at {{ time_in_loc }} <br />
+                   and checked out at {{ time_out_loc }}</p>
+                 <p>Would you like to check in again?</p>
+             <form method="post" class="form-floating">
+                  <input type="text" class="form-control" name="phonenumber" id="phonenumber" placeholder="2515556666" required>
+                  <label for="phonenumber">Phone Number</label>
+                <input type="submit" value="Check In">
+             </form>
+           {% endif %}
+    {% else %}
+    <form method="post" class="form-floating">
+          <input type="text" class="form-control" name="phonenumber" id="phonenumber" placeholder="2515556666" required>
+          <label for="phonenumber">Phone Number</label>
+        <input type="submit" value="Check In">
+     </form>
+    {% endif %}
+{% endblock %}

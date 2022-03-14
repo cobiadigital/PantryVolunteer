@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h1>{% block title %}Register{% endblock %}</h1>
+{% endblock %}
+{% block content %}
+ <form method="post">
+    <div class="form-floating">
+        <input type="text" class="form-control" name="phonenumber" id="phonenumber" value="{{ request.args.get("phonenumber") }}"  placeholder="2515551111">
+        <label for="phonenumber">Phone Number</label>
+    </div>
+    <div class="form-floating">
+        <input type="text" class="form-control" name="firstname" id="firstname" placeholder="First Name">
+        <label for="firstname">First Name</label>
+    </div>
+    <div class="form-floating">
+        <input type="text" class="form-control" name="lastname" id="lastname"  placeholder="Last Name">
+        <label for="lastname">Last Name</label>
+    </div>
+    <div class="form-floating">
+        <input type="email" class="form-control" name="email" id="email"  placeholder="name@example.com">
+        <label for="email">Email</label>
+    </div>
+    <input type="submit" value="Register">
+ </form>
+{% endblock %}

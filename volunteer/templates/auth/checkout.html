@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h1>{% block title %}Checkout{% endblock %}</h1>
+{% endblock %}
+{% block content %}
+    {% if g.user %}
+    <p>Hi {{ g.user['firstname'] }},</p>
+       <p> You checked in at {{ time_in_loc }} <br />
+           The time now is {{ time_now_loc }}
+        would you like to check out?</p>
+    <form method="post">
+        <input type="hidden" name="checkout" id="checkout" value="0">
+        <input type="submit" class="btn btn-primary" value="Check Out">
+  </form>
+    {% else %}
+        <p>Something has gone wrong. Please go back to the <a href="{{ url_for('auth.index') }}">homepage</a></p>
+    {% endif %}
+{% endblock %}
