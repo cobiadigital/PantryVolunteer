@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h1 class="text-center">{% block title %}Volunteer Sign In{% endblock %}</h1>
+{% endblock %}
+{% block content %}
+    {% if g.user %}
+          <p class="mt-5">Welcome {{ g.user['firstname'] }},</p>
+             {% if g.user['check_in_state'] %}
+               <p> You checked in at {{ time_in_loc.strftime('%I:%m %p on %b %d') }} <br />
+                   would you like to <a href="{{ url_for('auth.checkout') }}">check out?</a></p>
+            {% else %}
+               <p> You checked in at {{ time_in_loc.strftime('%I:%m %p on %b %d') }} <br />
+                   and checked out at {{ time_out_loc.strftime('%I:%m %p on %b %d') }}</p>
+            <div class="accordion accordion-flush" id="accordionFlushExample">
+                    <div class="accordion-item">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end bg-light">
+                            <button class="collapsed btn btn-link text-end text-end" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                             Update Time
+                            </button>
+                        </div>
+                        <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+                            <div class="accordion-body bg-light">
+                            <form method="POST" action="/">
+                                <input type="hidden" name="which_form" id="which_form" value="update_time">
+
+                                <div class="row align-items-center">
+                                    <div class="form-floating col">
+
+                                        <input type="time" name="timeinsplittime" class="form-control" value="{{time_in_loc.time()}}" >
+                                        <label for="timeinsplittime">Time In</label>
+                                    </div>
+                                    <div class="form-floating col">
+                                        <input type="time" name="timeoutsplittime" class="form-control" value="{{time_out_loc.time()}}" >
+                                        <label for="timeoutsplittime">Time Out</label>
+                                    </div>
+                                    <div class="col">
+                                        <input type="submit" value="Update">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                 <h4 class="text-center pt-5">Would you like to check in again?</h4>
+             <form method="post" >
+                 <div class="row align-items-center justify-content-center">
+                     <div class="form-floating col-5">
+                        <input type="hidden" name="which_form" id="which_form2" value="login">
+                         <input type="text" class="form-control" name="phonenumber" id="phonenumber" placeholder="2515556666" required>
+                         <label for="phonenumber">Phone Number</label>
+                     </div>
+                     <div class="col-3 ">
+                        <input type="submit" value="Check In" class="btn btn-primary">
+                     </div>
+                 </div>
+             </form>
+           {% endif %}
+             <h4 class="text-center mt-5">Info Verification</h4>
+              <p>We have the following information about you.<br />
+                Phone: {{ g.user['phonenumber'] }}<br />
+                Name: {{ g.user['firstname'] }} {{ g.user['lastname'] }}<br />
+                Email: {{ g.user['email'] }}</p>
+                <p class="text-center">Something look wrong?<br />
+            <a href="{{ url_for('auth.update_info') }}" class="btn btn-primary">Update Info</a></p>
+    {% else %}
+    <form method="post" >
+         <div class="row align-items-center justify-content-center py-5 my-5">
+             <div class="form-floating col-5">
+                <input type="hidden" name="which_form" id="which_form3" value="login">
+                 <input type="text" class="form-control" name="phonenumber" id="phonenumber2" placeholder="2515556666" required>
+                 <label for="phonenumber">Phone Number</label>
+             </div>
+             <div class="col-3 ">
+                <input type="submit" value="Check In" class="btn btn-primary">
+             </div>
+         </div>
+    </form>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h1>{% block title %}Register{% endblock %}</h1>
+{% endblock %}
+{% block content %}
+{% if g.user %}
+<p class="mt-5">Hi {{ g.user['firstname']}},<br />
+Thank you for signing up!</p>
+<h4 class="mt-4">Please verify the information below</h4>
+    <p>We have the following information about you.<br />
+    Phone: {{ g.user['phonenumber'] }}<br />
+    Name: {{ g.user['firstname'] }} {{ g.user['lastname'] }}<br />
+    Email: {{ g.user['email'] }}</p>
+    <div class="d-flex mx-auto justify-content-evenly mt-5">
+        <div><a href="{{ url_for('auth.update_info') }}" class="btn btn-secondary">Update Info</a></div>
+        <div><a href="{{ url_for('auth.index') }}" class="btn btn-primary">Info is Correct</a></div>
+    </div>
+        {% else %}
+ <form method="post">
+    <div class="form-floating">
+        <input type="text" class="form-control" name="phonenumber" id="phonenumber" value="{{ request.args.get("phonenumber") }}"  placeholder="2515551111">
+        <label for="phonenumber">Phone Number</label>
+    </div>
+    <div class="form-floating">
+        <input type="text" class="form-control" name="firstname" id="firstname" placeholder="First Name">
+        <label for="firstname">First Name</label>
+    </div>
+    <div class="form-floating">
+        <input type="text" class="form-control" name="lastname" id="lastname"  placeholder="Last Name">
+        <label for="lastname">Last Name</label>
+    </div>
+    <div class="form-floating">
+        <input type="email" class="form-control" name="email" id="email"  placeholder="name@example.com">
+        <label for="email">Email</label>
+    </div>
+    <input type="submit" value="Register">
+ </form>
+{% endif %}
+{% endblock %}

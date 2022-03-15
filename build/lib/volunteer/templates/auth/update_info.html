@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Edit {{ g.user['firstname'] }}'s info.{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+      <div class="form-floating">
+    <input name="phonenumber" id="phonenumber" class="form-control" placeholder="2515556666"
+           value="{{ request.form['phonenumber'] or g.user['phonenumber'] }}" required>
+          <label for="phonenumber">Phone Number</label>
+</div>
+    <div class="form-floating">
+        <input name="firstname" id="firstname" class="form-control" placeholder="First Name"
+               value="{{ request.form['firstname'] or g.user['firstname'] }}" required>
+        <label for="firstname">First Name</label>
+    </div>
+    <div class="form-floating">
+        <input name="lastname" id="lastname" class="form-control" placeholder="Last Name"
+                   value="{{ request.form['lastname'] or g.user['lastname'] }}" required>
+        <label for="lastname">Last Name</label>
+    </div>
+    <div class="form-floating">
+        <input name="email" id="email" class="form-control" placeholder="name@example.com"
+               value="{{ request.form['email'] or g.user['email'] }}" >
+        <label for="email">Email</label>
+    </div>
+    <input type="submit" value="Update">
+  </form>
+
+{% endblock %}
