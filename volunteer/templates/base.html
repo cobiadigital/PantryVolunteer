@@ -10,7 +10,7 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav">
-              {% if g.user %}
+      {% if g.user %}
         <li class="nav-item">
           <a class="nav-link active" aria-current="page" href="{{ url_for('auth.logout') }}">Log Out</a>
         </li>
@@ -27,7 +27,7 @@
   </div>
 </nav>
 <section class="content">
-<div class="container" style="max-width: 540px;">
+<div class="container bg-light py-5" style="max-width: 540px;">
     <header>
         {% block header %}{% endblock %}
     </header>

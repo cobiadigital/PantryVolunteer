@@ -8,9 +8,10 @@ CREATE TABLE user (
     lastname TEXT NOT NULL,
     email TEXT,
     check_in_state BINARY,
-    account_activated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_time_in DATETIME NOT NULL,
-    last_time_out DATETIME
+    last_time_out DATETIME,
+    account_activated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    account_updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE time_sheet (

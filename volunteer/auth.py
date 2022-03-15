@@ -27,6 +27,7 @@ def index():
 
         if user is None:
             # error = 'Incorrect phonenumber.'
+            session.clear()
             return redirect(url_for('auth.register', phonenumber=phonenumber))
 
         if error is None:
@@ -96,7 +97,7 @@ def register():
                     (user_id, 1),
                 )
                 db.commit()
-                return redirect(url_for("auth.index"))
+                return render_template('auth/register.html')
         flash(error)
 
     return render_template('auth/register.html')
@@ -119,9 +120,44 @@ def checkout():
         return redirect(url_for('auth.index'))
     if g.user:
         time_in_loc = utc.localize(dt.datetime.strptime(g.user['last_time_in'], '%Y-%m-%d %H:%M:%S')).astimezone(tz=loc)
+        timeinsplittime = time_in_loc.time()
         time_now_loc = dt.datetime.now(tz=loc)
-        return render_template('auth/checkout.html', time_in_loc=time_in_loc, time_now_loc=time_now_loc )
+        return render_template('auth/checkout.html', time_in_loc=time_in_loc, time_now_loc=time_now_loc, timeinsplittime=timeinsplittime )
     return redirect(url_for('auth.index'))
+
+@bp.route('/update_info', methods=('GET', 'POST'))
+def update_info():
+    if request.method == 'POST':
+        user_id = g.user['id']
+        phonenumber = request.form['phonenumber']
+        firstname = request.form['firstname']
+        lastname = request.form['lastname']
+        email = request.form['email']
+
+        db = get_db()
+
+        error = None
+        if not phonenumber:
+            error = 'Phone number is required.'
+        elif not firstname:
+            error = 'Your name is required.'
+        elif not lastname:
+            error = 'Your name is required.'
+        elif error is not None:
+            flash(error)
+        else:
+            db = get_db()
+            db.execute(
+                'UPDATE user SET phonenumber = ?, firstname = ?, lastname = ?, email = ?, account_updated = current_timestamp'
+                ' WHERE id = ?',
+                (phonenumber, firstname, lastname, email, user_id)
+            )
+            db.commit()
+            return redirect(url_for('auth.index'))
+
+    return render_template('auth/update_info.html')
+
+
 
 @bp.before_app_request
 def load_logged_in_user():
@@ -133,7 +169,6 @@ def load_logged_in_user():
         g.user = get_db().execute(
             'SELECT * FROM user WHERE id = ?', (user_id,)
         ).fetchone()
-        last_time_in = g.user['last_time_in']
 
 @bp.route('/logout')
 def logout():
