@@ -18,35 +18,60 @@ bp = Blueprint('auth',__name__, url_prefix='/')
 @bp.route('/', methods=('GET', 'POST'))
 def index():
     if request.method == 'POST':
-        phonenumber = request.form['phonenumber']
-        db = get_db()
-        error = None
-        user = db.execute(
-            'SELECT * FROM user WHERE phonenumber = ?', (phonenumber,)
-        ).fetchone()
+        which_form = request.form['which_form']
+        if which_form == 'login':
+            phonenumber = request.form['phonenumber']
+            db = get_db()
+            error = None
+            user = db.execute(
+                'SELECT * FROM user WHERE phonenumber = ?', (phonenumber,)
+            ).fetchone()
 
-        if user is None:
-            # error = 'Incorrect phonenumber.'
-            session.clear()
-            return redirect(url_for('auth.register', phonenumber=phonenumber))
+            if user is None:
+                # error = 'Incorrect phonenumber.'
+                session.clear()
+                return redirect(url_for('auth.register', phonenumber=phonenumber))
 
-        if error is None:
-            session.clear()
-            session['user_id'] = user['id']
-            user_id = user['id']
-            if user['check_in_state'] == 0:
-                db.execute(
-                    "UPDATE user SET check_in_state = ?, last_time_in = current_timestamp WHERE ID = ?",
-                    (1, user_id),
-                )
-                db.execute(
-                    "INSERT INTO time_sheet (user_id, check_in_state, time_in) VALUES (?, ?, current_timestamp)",
-                    (user_id, 1),
-                )
-                db.commit()
-                return redirect(url_for('auth.index'))
+            if error is None:
+                session.clear()
+                session['user_id'] = user['id']
+                user_id = user['id']
+                if user['check_in_state'] == 0:
+                    db.execute(
+                        "UPDATE user SET check_in_state = ?, last_time_in = current_timestamp WHERE ID = ?",
+                        (1, user_id),
+                    )
+                    db.execute(
+                        "INSERT INTO time_sheet (user_id, check_in_state, time_in) VALUES (?, ?, current_timestamp)",
+                        (user_id, 1),
+                    )
+                    db.commit()
+                    return redirect(url_for('auth.index'))
 
-        flash(error)
+            flash(error)
+        elif which_form == 'update_time':
+            db = get_db()
+            user_id = g.user['id']
+            timeinsplittime = dt.datetime.strptime(request.form['timeinsplittime'], '%H:%M:%S').time()
+            timeoutsplittime = dt.datetime.strptime(request.form['timeoutsplittime'], '%H:%M:%S').time()
+            time_in_loc = loc.localize(
+                dt.datetime.combine(dt.datetime.strptime(g.user['last_time_in'], '%Y-%m-%d %H:%M:%S').date(),
+                                    timeinsplittime))
+            time_in_utc = time_in_loc.astimezone(tz=utc).strftime('%Y-%m-%d %H:%M:%S')
+            time_out_loc = loc.localize(
+                dt.datetime.combine(dt.datetime.strptime(g.user['last_time_out'], '%Y-%m-%d %H:%M:%S').date(),
+                                    timeoutsplittime))
+            time_out_utc = time_out_loc.astimezone(tz=utc).strftime('%Y-%m-%d %H:%M:%S')
+            db.execute(
+                "UPDATE user SET last_time_in = ?, last_time_out = ? WHERE id = ? ",
+                (time_in_utc, time_out_utc, user_id,),
+            )
+            db.execute(
+                "UPDATE time_sheet SET time_in = ?, time_out = ?, time_modified = current_timestamp WHERE user_id = ? AND ID = (SELECT max(ID) FROM time_sheet) ",
+                (time_in_utc, time_out_utc, user_id,),
+            )
+            db.commit()
+            return redirect(url_for('auth.index', time_in_loc=time_in_loc, time_out_loc=time_out_loc))
 
     if g.user:
         if g.user['check_in_state']:
@@ -54,7 +79,9 @@ def index():
             return render_template('auth/index.html', time_in_loc=time_in_loc)
         else:
             time_in_loc = utc.localize(dt.datetime.strptime(g.user['last_time_in'], '%Y-%m-%d %H:%M:%S')).astimezone(tz=loc)
+            timeinsplittime = time_in_loc.time()
             time_out_loc = utc.localize(dt.datetime.strptime(g.user['last_time_out'], '%Y-%m-%d %H:%M:%S')).astimezone(tz=loc)
+            timeoutsplittime = time_out_loc.time()
             return render_template('auth/index.html', time_in_loc=time_in_loc, time_out_loc=time_out_loc)
 
     else:
@@ -97,7 +124,7 @@ def register():
                     (user_id, 1),
                 )
                 db.commit()
-                return render_template('auth/register.html')
+                return redirect(url_for('auth.register'))
         flash(error)
 
     return render_template('auth/register.html')
@@ -105,23 +132,41 @@ def register():
 @bp.route('/checkout', methods=('GET', 'POST'))
 def checkout():
     user_id = g.user['id']
+    time_now_loc = dt.datetime.now(tz=loc)
+
     if request.method == 'POST':
         checkout = request.form['checkout']
         db = get_db()
-        db.execute(
-            "UPDATE user SET check_in_state = ?, last_time_out = current_timestamp WHERE id = ? ",
-            (checkout, user_id),
-        )
-        db.execute(
-            "UPDATE time_sheet SET check_in_state = ?, time_out = current_timestamp WHERE user_id = ? AND ID = (SELECT max(ID) FROM time_sheet) ",
-            (checkout, user_id,),
-        )
-        db.commit()
-        return redirect(url_for('auth.index'))
+        if checkout == '0':
+            db.execute(
+                "UPDATE user SET check_in_state = ?, last_time_out = current_timestamp WHERE id = ? ",
+                (checkout, user_id),
+            )
+            db.execute(
+                "UPDATE time_sheet SET check_in_state = ?, time_out = current_timestamp WHERE user_id = ? AND ID = (SELECT max(ID) FROM time_sheet) ",
+                (checkout, user_id,),
+            )
+            db.commit()
+            return redirect(url_for('auth.index'))
+        elif checkout == '1':
+            timeinsplittime = dt.datetime.strptime(request.form['timeinsplittime'], '%H:%M:%S').time()
+            time_in_loc = loc.localize(dt.datetime.combine(dt.datetime.strptime(g.user['last_time_in'], '%Y-%m-%d %H:%M:%S').date(), timeinsplittime))
+            time_in_utc = time_in_loc.astimezone(tz=utc).strftime('%Y-%m-%d %H:%M:%S')
+            db.execute(
+                "UPDATE user SET last_time_in = ? WHERE id = ? ",
+                (time_in_utc, user_id),
+            )
+            db.execute(
+                "UPDATE time_sheet SET time_in = ? WHERE user_id = ? AND ID = (SELECT max(ID) FROM time_sheet) ",
+                (time_in_utc, user_id,),
+            )
+            db.commit()
+            return redirect(url_for('auth.checkout', time_in_loc=time_in_loc, time_now_loc=time_now_loc,
+                                   timeinsplittime=timeinsplittime))
+
     if g.user:
         time_in_loc = utc.localize(dt.datetime.strptime(g.user['last_time_in'], '%Y-%m-%d %H:%M:%S')).astimezone(tz=loc)
         timeinsplittime = time_in_loc.time()
-        time_now_loc = dt.datetime.now(tz=loc)
         return render_template('auth/checkout.html', time_in_loc=time_in_loc, time_now_loc=time_now_loc, timeinsplittime=timeinsplittime )
     return redirect(url_for('auth.index'))
 

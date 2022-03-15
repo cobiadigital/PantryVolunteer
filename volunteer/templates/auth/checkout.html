@@ -6,7 +6,7 @@
 {% block content %}
     {% if g.user %}
         <p class="mt-5">Hi {{ g.user['firstname'] }},</p>
-        <p> You checked in at {{ time_in_loc.strftime('%I:%m %p on %b %d') }} <br />
+        <p> You checked in at {{ timeinsplittime.strftime('%I:%m %p')}} on {{time_in_loc.strftime('%b %d') }} <br />
            The time now is {{ time_now_loc.strftime('%I:%m %p on %b %d') }}</p>
     <div class="accordion accordion-flush" id="accordionFlushExample">
         <div class="accordion-item">
@@ -18,10 +18,11 @@
             <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
                 <div class="accordion-body">
                 <form method="POST" action="/checkout">
+                    <input type="hidden" name="checkout" id="checkout" value="1">
                     <div class="row align-items-center">
                         <div class="form-floating col-5">
-                            <input type="time" name="timeintime" class="form-control" value="{{timeinsplittime}}" >
-                            <label for="timeintime">Time In</label>
+                            <input type="time" name="timeinsplittime" class="form-control" value="{{timeinsplittime}}" >
+                            <label for="timeinsplittime">Time In</label>
                         </div>
                         <div class="col-4">
                             <input type="submit" value="Update">

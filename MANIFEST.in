@@ -1,0 +1,4 @@
+include volunteer/schema.sql
+graft volunteer/static
+graft volunteer/templates
+global-exclude *.pyc
