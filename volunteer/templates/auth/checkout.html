@@ -1,27 +1,28 @@
 {% extends 'base.html' %}
 
 {% block header %}
-<h1>{% block title %}Checkout{% endblock %}</h1>
+<h1>{% block title %}Sign Out?{% endblock %}</h1>
 {% endblock %}
 {% block content %}
     {% if g.user %}
-        <p class="mt-5">Hi {{ g.user['firstname'] }},</p>
-        <p> You checked in at {{ timeinsplittime.strftime('%I:%m %p')}} on {{time_in_loc.strftime('%b %d') }} <br />
-           The time now is {{ time_now_loc.strftime('%I:%m %p on %b %d') }}</p>
+        <p class="mt-5">Hi {{ g.user['nickname'] }},</p>
+        <p> You checked in at <strong>{{ time_in_loc.strftime('%I:%M %p')}} on {{time_in_loc.strftime('%b %d') }}</strong> <br />
+           The time now is <strong>{{ time_now_loc.strftime('%I:%M %p on %b %d') }}</strong></p>
     <div class="accordion accordion-flush" id="accordionFlushExample">
         <div class="accordion-item">
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end bg-light">
                 <button class="collapsed btn btn-link text-end text-end" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
-                 Update Time
+                 Update Time In
                 </button>
             </div>
             <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
                 <div class="accordion-body">
                 <form method="POST" action="/checkout">
-                    <input type="hidden" name="checkout" id="checkout" value="1">
+                    <input type="hidden" name="checkout" id="checkout_1" value="1">
+                    <input type="hidden" name="time_in_loc" id="time_in_loc" value="{{time_in_loc.date()}}" >
                     <div class="row align-items-center">
                         <div class="form-floating col-5">
-                            <input type="time" name="timeinsplittime" class="form-control" value="{{timeinsplittime}}" >
+                            <input type="time" name="timeinsplittime" class="form-control" value="{{time_in_loc.time()}}" >
                             <label for="timeinsplittime">Time In</label>
                         </div>
                         <div class="col-4">
@@ -32,11 +33,12 @@
             </div>
         </div>
     </div>
-        <h4 class="text-center mt-5">Would you like to check out?</h4>
+        <h4 class="text-center mt-5">Would you like to sign out?</h4>
     <form method="post" class="text-center">
         <input type="hidden" name="checkout" id="checkout" value="0">
-        <input type="submit" class="btn btn-primary" value="Check Out">
+        <input type="submit" class="btn btn-primary" value="Sign Out">
     </form>
+        <p class="m-5">You'll be able to correct your checkout time once you checkout.</p>
     {% else %}
     <p>Something has gone wrong. Please go back to the <a href="{{ url_for('auth.index') }}">homepage</a></p>
     {% endif %}

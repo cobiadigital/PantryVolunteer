@@ -5,14 +5,17 @@
 {% endblock %}
 {% block content %}
     {% if g.user %}
-          <p class="mt-5">Welcome {{ g.user['firstname'] }},</p>
+          <p class="mt-5">Welcome {{ g.user['nickname'] }},</p>
+
              {% if g.user['check_in_state'] %}
-               <p> You checked in at {{ time_in_loc.strftime('%I:%m %p on %b %d') }} <br />
+               <p>We've got you checked in at <strong>{{ time_in_loc.strftime('%I:%M %p on %b %d') }}</strong> <br />
                    would you like to <a href="{{ url_for('auth.checkout') }}">check out?</a></p>
+
             {% else %}
-               <p> You checked in at {{ time_in_loc.strftime('%I:%m %p on %b %d') }} <br />
-                   and checked out at {{ time_out_loc.strftime('%I:%m %p on %b %d') }}</p>
-            <div class="accordion accordion-flush" id="accordionFlushExample">
+                <p> You are <strong>checked out</strong>.</p>
+               <p>You last checked in at <strong>{{ time_in_loc.strftime('%I:%M %p on %b %d') }}</strong> <br />
+                   and checked out at <strong>{{ time_out_loc.strftime('%I:%M %p on %b %d') }}</strong></p>
+   <div class="accordion accordion-flush" id="accordionFlushExample">
                     <div class="accordion-item">
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end bg-light">
                             <button class="collapsed btn btn-link text-end text-end" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
@@ -23,6 +26,7 @@
                             <div class="accordion-body bg-light">
                             <form method="POST" action="/">
                                 <input type="hidden" name="which_form" id="which_form" value="update_time">
+                                <input type="hidden" name="time_in_loc" id="time_in_loc" value="{{time_in_loc.date()}}" >
 
                                 <div class="row align-items-center">
                                     <div class="form-floating col">
@@ -42,30 +46,41 @@
                         </div>
                     </div>
                 </div>
-                 <h4 class="text-center pt-5">Would you like to check in again?</h4>
+
+                 <h4 class="text-center pt-5">Would you like to sign in again?</h4>
              <form method="post" >
                  <div class="row align-items-center justify-content-center">
-                     <div class="form-floating col-5">
-                        <input type="hidden" name="which_form" id="which_form2" value="login">
-                         <input type="text" class="form-control" name="phonenumber" id="phonenumber" placeholder="2515556666" required>
-                         <label for="phonenumber">Phone Number</label>
+                     <div class="col-5">
+                         <div class="form-floating">
+                            <input type="hidden" name="which_form" id="which_form2" value="login">
+                             <input type="text" class="form-control" name="phonenumber" id="phonenumber" placeholder="2515556666" required>
+                             <label for="phonenumber">Phone Number</label>
+                         </div>
                      </div>
                      <div class="col-3 ">
-                        <input type="submit" value="Check In" class="btn btn-primary">
+                        <input type="submit" value="Sign In" class="btn btn-primary">
                      </div>
                  </div>
              </form>
            {% endif %}
              <h4 class="text-center mt-5">Info Verification</h4>
-              <p>We have the following information about you.<br />
-                Phone: {{ g.user['phonenumber'] }}<br />
-                Name: {{ g.user['firstname'] }} {{ g.user['lastname'] }}<br />
-                Email: {{ g.user['email'] }}</p>
-                <p class="text-center">Something look wrong?<br />
-            <a href="{{ url_for('auth.update_info') }}" class="btn btn-primary">Update Info</a></p>
+   <p>We have the following information about you.<br />
+    Phone: {{ g.user['phonenumber'] }}<br />
+    Name: {{g.user['honorific_prefix'] or ''}} {{ g.user['given_name'] }} {{ g.user['family_name'] }} {{g.user['honorific_suffix'] or ''}}<br />
+    Preferred Name: {{ g.user['nickname']}} <br />
+    Preferred Pronouns: {{ g.user['pronouns'] or 'No pronouns provided'}}<br />
+    Email: {{ g.user['email'] or 'No email provided'}}<br />
+        Street Address:<br />
+        {{ g.user['street_address'] or 'No address provided' }}<br />
+        Zip Code: {{g.user['postal_code'] or 'No zip provided' }}<br />
+        Organization: {{ g.user['organization'] or 'No organization specified' }}</p>
+                <p class="text-center">Something look wrong?
+            <a href="{{ url_for('auth.update_info') }}" class="btn btn-text text-primary">Update Info</a></p>
     {% else %}
+                <p class="mt-5">Welcome to the Love All Food Pantry volunteer time tracker!</p>
+                <p>Please enter your phone number as all numbers like 2515556666</p>
     <form method="post" >
-         <div class="row align-items-center justify-content-center py-5 my-5">
+         <div class="row align-items-center justify-content-center pb-5 my-5">
              <div class="form-floating col-5">
                 <input type="hidden" name="which_form" id="which_form3" value="login">
                  <input type="text" class="form-control" name="phonenumber" id="phonenumber2" placeholder="2515556666" required>

@@ -1,12 +1,20 @@
 DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS profile;
 DROP TABLE IF EXISTS time_sheet;
 
 CREATE TABLE user (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     phonenumber char(10) unique NOT NULL,
-    firstname TEXT NOT NULL,
-    lastname TEXT NOT NULL,
+    honorific_prefix TEXT,
+    given_name TEXT NOT NULL,
+    family_name TEXT NOT NULL,
+    honorific_suffix TEXT,
+    pronouns TEXT,
+    nickname TEXT NOT NULL,
     email TEXT,
+    street_address TEXT,
+    postal_code TEXT,
+    organization TEXT,
     check_in_state BINARY,
     last_time_in DATETIME NOT NULL,
     last_time_out DATETIME,

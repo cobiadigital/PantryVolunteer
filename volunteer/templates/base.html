@@ -27,8 +27,8 @@
   </div>
 </nav>
 <section class="content">
-<div class="container bg-light py-5" style="max-width: 540px;">
-    <header>
+<div class="container bg-light pt-2 pb-5" style="max-width: 540px;">
+    <header class="text-center">
         {% block header %}{% endblock %}
     </header>
     {% for message in get_flashed_messages() %}

@@ -5,28 +5,75 @@
 {% endblock %}
 
 {% block content %}
-  <form method="post">
-      <div class="form-floating">
-    <input name="phonenumber" id="phonenumber" class="form-control" placeholder="2515556666"
-           value="{{ request.form['phonenumber'] or g.user['phonenumber'] }}" required>
-          <label for="phonenumber">Phone Number</label>
-</div>
-    <div class="form-floating">
-        <input name="firstname" id="firstname" class="form-control" placeholder="First Name"
-               value="{{ request.form['firstname'] or g.user['firstname'] }}" required>
-        <label for="firstname">First Name</label>
+<form method="post">
+    <div class="form-floating mb-3">
+        <input type="text" class="form-control" name="tel-national" id="tel-national" value="{{ request.form['tel-national'] or g.user['phonenumber'] }}"  placeholder="2515551111">
+        <label for="tel-national">Phone Number</label>
     </div>
-    <div class="form-floating">
-        <input name="lastname" id="lastname" class="form-control" placeholder="Last Name"
-                   value="{{ request.form['lastname'] or g.user['lastname'] }}" required>
-        <label for="lastname">Last Name</label>
-    </div>
-    <div class="form-floating">
-        <input name="email" id="email" class="form-control" placeholder="name@example.com"
-               value="{{ request.form['email'] or g.user['email'] }}" >
+     <div class="row mb-1 g-1">
+         <div class="col-4">
+             <div class="form-floating">
+                <input type="text" class="form-control" name="honorific-prefix" id="honorific-prefix" placeholder="Honorific-prefix" value="{{ request.form['honorific-prefix'] or g.user['honorific_prefix'] }}">
+                <label for="honorific-prefix">Prefix</label>
+            </div>
+         </div>
+         <div class="col-8">
+            <div class="form-floating">
+                <input type="text" class="form-control" name="given-name" id="given-name" placeholder="First Name" value="{{ request.form['given-name'] or g.user['given_name'] }}" required>
+                <label for="given-name">First Name</label>
+            </div>
+        </div>
+     </div>
+
+     <div class="row mb-3 g-1">
+        <div class="col-8">
+            <div class="form-floating">
+                <input type="text" class="form-control" name="family-name" id="family-name"  placeholder="Last Name" value="{{ request.form['family-name'] or g.user['family_name'] }}" required>
+                <label for="family-name">Last Name</label>
+             </div>
+        </div>
+            <div class="col-4">
+                <div class="form-floating">
+                  <input type="text" class="form-control" name="honorific-suffix" id="honorific-suffix"  value="{{ request.form['honorific-suffix'] or g.user['honorific_suffix'] }}" placeholder="Suffix">
+                 <label for="honorific-suffix">Suffix</label>
+              </div>
+         </div>
+     </div>
+     <div class="row mb-3 g-1">
+         <div class="col-6">
+             <div class="form-floating">
+                <input type="text" class="form-control" name="pronouns" id="pronouns"  placeholder="Preferred Pronouns" value="{{ request.form['pronouns'] or g.user['pronouns'] }}">
+                <label for="pronouns">Preferred Pronouns</label>
+             </div>
+         </div>
+         <div class="col-6">
+             <div class="form-floating">
+                <input type="text" class="form-control" name="nickname" id="nickname"  placeholder="Preferred Name" value="{{ request.form['nickname'] or g.user['nickname'] }}">
+                <label for="pronouns">Preferred Name</label>
+            </div>
+         </div>
+     </div>
+
+    <div class="form-floating mb-3">
+        <input type="email" class="form-control" name="email" id="email"  placeholder="name@example.com" value="{{ request.form['email'] or g.user['email'] }}">
         <label for="email">Email</label>
     </div>
-    <input type="submit" value="Update">
-  </form>
+     <div class="form-floating mb-1">
+        <input type="text" class="form-control" name="street-address" id="street-address"  placeholder="street-address" value="{{ request.form['street-address'] or g.user['street_address'] }}">
+        <label for="street-address">Street Address</label>
+    </div>
+     <div class="form-floating mb-3">
+        <input type="text" class="form-control" name="postal-code" id="postal-code"  placeholder="postal-code" value="{{ request.form['postal-code'] or g.user['postal_code'] }}">
+        <label for="postal-code">Zip Code</label>
+    </div>
+     <div class="form-floating mb-3">
+        <input type="text" class="form-control" name="organization" id="organization"  placeholder="Organization" value="{{ request.form['organization'] or g.user['organization'] }}">
+        <label for="organization">Organization (optional)</label>
+    </div>
+    <div class="d-flex justify-content-evenly">
+        <a class="btn btn-secondary" href="{{url_for['auth.index']}}" role="button">Cancel</a>
+        <input class="btn btn-primary" type="submit" value="Update Info">
+    </div>
+ </form>
 
 {% endblock %}
