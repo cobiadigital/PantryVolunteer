@@ -8,4 +8,7 @@ cmd
 bash
 $ export FLASK_APP=volunteer
 $ export FLASK_ENV=development
+
+$ flask init-db
 $ flask run
+
