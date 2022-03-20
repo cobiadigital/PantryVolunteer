@@ -7,7 +7,7 @@
 {% block content %}
 <form method="post">
     <div class="form-floating mb-3">
-        <input type="text" class="form-control" name="tel-national" id="tel-national" value="{{ request.form['tel-national'] or g.user['phonenumber'] }}"  placeholder="2515551111">
+        <input type="text" class="form-control" name="tel-national" id="tel-national" value="{{ request.form['tel-national'] or g.user['phonenumber'] }}"  placeholder="2515551111" required>
         <label for="tel-national">Phone Number</label>
     </div>
      <div class="row mb-1 g-1">
@@ -48,7 +48,7 @@
          </div>
          <div class="col-6">
              <div class="form-floating">
-                <input type="text" class="form-control" name="nickname" id="nickname"  placeholder="Preferred Name" value="{{ request.form['nickname'] or g.user['nickname'] }}">
+                <input type="text" class="form-control" name="nickname" id="nickname"  placeholder="Preferred Name" value="{{ request.form['nickname'] or g.user['nickname'] }}" required>
                 <label for="pronouns">Preferred Name</label>
             </div>
          </div>
