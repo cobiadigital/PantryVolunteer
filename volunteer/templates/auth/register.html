@@ -5,13 +5,13 @@
 {% endblock %}
 {% block content %}
 {% if g.user %}
-    <p class="mt-5">Hi {{ g.user['firstname']}},<br />
+    <p class="mt-5">Hi {{ g.user['given_name']}},<br />
     Thank you for signing up!</p>
     <h4 class="mt-4">Please verify the information below</h4>
     <p>We have the following information about you.<br />
     Phone: {{ g.user['phonenumber'] }}<br />
     Name: {{g.user['honorific_prefix'] or ''}}  {{ g.user['given_name'] }} {{ g.user['family_name'] }} {{g.user['honorifix-suffix'] or ''}}<br />
-    Preferred Name: {{ g.user['preferred_name']}} <br />
+    Preferred Name: {{ g.user['nickname']}} <br />
     Preferred Pronouns: {{ g.user['pronouns'] or 'No pronouns provided'}}<br />
     Email: {{ g.user['email'] or 'No email provided'}}<br />
         Street Address:<br />
