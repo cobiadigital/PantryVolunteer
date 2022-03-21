@@ -9,7 +9,7 @@
 
              {% if g.user['check_in_state'] %}
                <p>We've got you checked in at <strong>{{ time_in_loc.strftime('%I:%M %p on %b %d') }}</strong> <br />
-                   would you like to <a href="{{ url_for('auth.checkout') }}">check out?</a></p>
+                   would you like to <a href="{{ url_for('auth.checkout') }}">sign out?</a></p>
 
             {% else %}
                 <p> You are <strong>checked out</strong>.</p>
