@@ -1,14 +1,14 @@
 import functools
 
 from flask import(
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
+    current_app, Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
 from volunteer.db import get_db
 import datetime as dt
 from datetime import timezone
 import pytz
-
-
+import os
+import urllib
 utc = pytz.utc
 loc = pytz.timezone('US/Central')
 
@@ -147,6 +147,30 @@ def register():
         flash(error)
 
     return render_template('auth/register.html')
+
+@bp.route('/release', methods=('GET', 'POST'))
+def release():
+    user_id = g.user['id']
+    if request.method == 'POST':
+        #from POST png of signature canvas
+        #signature = DataURI(request.form['signature'])
+        signature_data = request.form['signature']
+
+        # binary_data = a2b_base64(signature_data)
+        sig_filename = "uploads/" + g.user['given_name'] + '_' + g.user['family_name'] + '_' + 'sig' + '_' + str(user_id) + '.svg'
+        response = urllib.request.urlopen(signature_data)
+        with open(os.path.join(current_app.instance_path, sig_filename), 'wb') as f:
+            f.write(response.file.read())
+
+        covid_immun = request.form['covid_immunization']
+        db = get_db()
+        error = None
+        return render_template('auth/release_eval.html', signature=signature_data, covid_immun=covid_immun)
+    else:
+        return render_template('auth/release.html')
+
+
+
 
 @bp.route('/checkout', methods=('GET', 'POST'))
 def checkout():
