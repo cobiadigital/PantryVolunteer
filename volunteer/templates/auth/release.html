@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h1 >{% block title %}Release{% endblock %}</h1>
+{% endblock %}
+{% block javascript %}
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <script src="{{ url_for('static', filename='app.js' ) }}"></script>
+    {% endblock %}
+{% block content %}
+{% if g.user %}
+     <h2 class="text-center">The Food Pantry at Central Release</h2>
+    <p>This Release by {{ g.user['given_name']}} {{ g.user['family_name']}},
+    {{ admin_items['release']|safe }}
+     <form method="post" enctype="multipart/form-data" onSubmit="submitForm();">
+         <div class="form-check">
+             <input class="form-check-input" type="radio" name="covid_immunization" id="covid_immunization_yes">
+             <label class="form-check-label" for="covid_immunization">
+                 I have had the Covid Immunization
+             </label>
+         </div>
+         <div class="form-check">
+             <input class="form-check-input" type="radio" name="covid_immunization" id="covid_immunization_no" checked>
+             <label class="form-check-label" for="covid_immunization_no">
+                 I have NOT had the Covid Immunization
+             </label>
+         </div>
+         <div id="signature-pad" class="m-signature-pad">
+             <div class="m-signature-pad--body">
+                 <canvas></canvas>
+                 <input type="hidden" name="signature" id="signature" value="">
+             </div>
+             <div class="signature-pad--footer">
+                 <div class="description">Sign above</div>
+                 <div class="signature-pad--actions">
+                     <div>
+                         <button type="button" class="button clear" data-action="clear">Clear</button>
+                     </div>
+                 </div>
+             </div>
+
+             <div class="d-flex mx-auto justify-content-evenly mt-5">
+                 <input class="btn btn-primary" type="submit" value="Submit">
+             </div>
+         </div>
+     </form>
+    {% else %}
+    <p class="mt-3">Something went wrong, please <a href="{{ url_for('auth.index') }}">sign in again</a></p>
+<p>Will you please tell us a little about yourself?</p>
+           </div>
+{% endif %}
+{% endblock %}
+
