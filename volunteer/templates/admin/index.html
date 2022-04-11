@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h1 class="text-center">{% block title %}Admin - Panel{% endblock %}</h1>
+{% endblock %}
+{% block content %}
+    {% if g.user %}
+    <form method="post" >
+        <div class="row">
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" name="username" id="username" value="{{ request.form['username'] or g.user['username'] }}"  placeholder="name@email.com">
+                <label for="username">Username</label>
+            </div>
+        </div>
+        <div class="row mb-1 g-1">
+             <div class="form-floating">
+                <input type="password" class="form-control" name="password" id="password" placeholder="password">
+                <label for="password">Password</label>
+             </div>
+        </div>
+         <div class="row align-items-center justify-content-center pb-3">
+             <div class="form-floating">
+                 <textarea  class="form-control" name="release" id="release" placeholder="Release" style="height: 200px">{{ request.form['release'] or admin['release']}}</textarea>
+                 <label for="release">Release</label>
+             </div>
+         </div>
+        <div class="row">
+             <input type="submit" value="Submit Changes" class="btn btn-primary">
+        </div>
+    </form>
+    {% endif %}
+{% endblock %}

@@ -1,14 +1,16 @@
 import functools
 
 from flask import(
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
+    current_app, Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
 from volunteer.db import get_db
 import datetime as dt
 from datetime import timezone
 import pytz
-
-
+from xhtml2pdf import pisa
+import os
+import urllib
+import svglib
 utc = pytz.utc
 loc = pytz.timezone('US/Central')
 
@@ -143,10 +145,50 @@ def register():
                     (user_id, 1),
                 )
                 db.commit()
-                return redirect(url_for('auth.register'))
-        flash(error)
+
+                return redirect(url_for('auth.release'))
+        else:
+            flash(error)
 
     return render_template('auth/register.html')
+
+@bp.route('/release', methods=('GET', 'POST'))
+def release():
+    db = get_db()
+    user_id = g.user['id']
+    admin_items = db.execute(
+        'SELECT release FROM admin WHERE id = ?', (1,)
+    ).fetchone()
+    if request.method == 'POST':
+        signature_data = request.form['signature']
+        covid_immun = request.form['covid_immunization']
+        sign_date = request.form['date']
+        sig_filename = "uploads/" + g.user['given_name'] + '_' + g.user['family_name'] + '_' + 'sig' + '_' + str(
+            user_id) + '.svg'
+        pdf_filename = "uploads/" + g.user['given_name'] + '_' + g.user['family_name'] + '_' + 'release' + '_' + str(
+            user_id) + '.pdf'
+
+        response = urllib.request.urlopen(signature_data)
+        with open(os.path.join(current_app.instance_path, sig_filename), 'wb') as f:
+            f.write(response.file.read())
+        sig_location = os.path.join(current_app.instance_path, sig_filename)
+        html = render_template('auth/release_print.html', admin_items=admin_items, signature=sig_location, date=sign_date)
+        result_file = open(os.path.join(current_app.instance_path, pdf_filename), "w+b")
+        pdf = pisa.CreatePDF(src=html, dest=result_file)
+        result_file.close()
+        if pdf.err:
+            return pdf.err
+
+        #from POST png of signature canvas
+        #signature = DataURI(request.form['signature'])
+
+        # binary_data = a2b_base64(signature_data)
+        error = None
+        return render_template('auth/release_eval.html', admin_items=admin_items, signature=signature_data, date=sign_date, covid_immun=covid_immun)
+        # return render_template('auth/release_print.html',  admin_items=admin_items, signature=signature_data, date=sign_date, covid_immun=covid_immun)
+
+    else:
+        return render_template('auth/release.html', admin_items=admin_items)
 
 @bp.route('/checkout', methods=('GET', 'POST'))
 def checkout():
