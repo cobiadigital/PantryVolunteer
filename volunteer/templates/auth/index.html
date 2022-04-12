@@ -9,12 +9,12 @@
 
              {% if g.user['check_in_state'] %}
                <p>We've got you checked in at <strong>{{ time_in_loc.strftime('%I:%M %p on %b %d') }}</strong> <br />
-                   would you like to <a href="{{ url_for('auth.checkout') }}">check out?</a></p>
+                   would you like to <a href="{{ url_for('auth.checkout') }}">sign out?</a></p>
 
             {% else %}
-                <p> You are <strong>checked out</strong>.</p>
-               <p>You last checked in at <strong>{{ time_in_loc.strftime('%I:%M %p on %b %d') }}</strong> <br />
-                   and checked out at <strong>{{ time_out_loc.strftime('%I:%M %p on %b %d') }}</strong></p>
+                <p> You are <strong>signed out</strong>.</p>
+               <p>You last signed in at <strong>{{ time_in_loc.strftime('%I:%M %p on %b %d') }}</strong> <br />
+                   and signed out at <strong>{{ time_out_loc.strftime('%I:%M %p on %b %d') }}</strong></p>
    <div class="accordion accordion-flush" id="accordionFlushExample">
                     <div class="accordion-item">
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end bg-light">
@@ -29,13 +29,13 @@
                                 <input type="hidden" name="time_in_loc" id="time_in_loc" value="{{time_in_loc.date()}}" >
 
                                 <div class="row align-items-center">
-                                    <div class="form-floating col">
+                                    <div class="form-floating col-6">
 
-                                        <input type="time" name="timeinsplittime" class="form-control" value="{{time_in_loc.time()}}" >
+                                        <input type="time" id="timeinsplittime" name="timeinsplittime" class="form-control" value="{{time_in_loc.time()}}" >
                                         <label for="timeinsplittime">Time In</label>
                                     </div>
-                                    <div class="form-floating col">
-                                        <input type="time" name="timeoutsplittime" class="form-control" value="{{time_out_loc.time()}}" >
+                                    <div class="form-floating col-6">
+                                        <input type="time" id="timeoutsplittime" name="timeoutsplittime" class="form-control" value="{{time_out_loc.time()}}" >
                                         <label for="timeoutsplittime">Time Out</label>
                                     </div>
                                     <div class="col">
@@ -50,7 +50,7 @@
                  <h4 class="text-center pt-5">Would you like to sign in again?</h4>
              <form method="post" >
                  <div class="row align-items-center justify-content-center">
-                     <div class="col-5">
+                     <div class="col-7">
                          <div class="form-floating">
                             <input type="hidden" name="which_form" id="which_form2" value="login">
                              <input type="text" class="form-control" name="phonenumber" id="phonenumber" placeholder="2515556666" required>
@@ -73,7 +73,10 @@
         Street Address:<br />
         {{ g.user['street_address'] or 'No address provided' }}<br />
         Zip Code: {{g.user['postal_code'] or 'No zip provided' }}<br />
-        Organization: {{ g.user['organization'] or 'No organization specified' }}</p>
+        Organization: {{ g.user['organization'] or 'No organization specified' }}<br />
+        I have had the Covid Immunization: {%if g.user['covid_immun']%}Yes{%else %}No{% endif%}<br />
+        Monday email reminder: {% if g.user['monday_email'] %}Yes{% else %}No{% endif %}<br />
+        Tuesday email reminder: {% if g.user['tuesday_email'] %}Yes{% else %}No{% endif %}</p>
                 <p class="text-center">Something look wrong?
             <a href="{{ url_for('auth.update_info') }}" class="btn btn-text text-primary">Update Info</a></p>
     {% else %}

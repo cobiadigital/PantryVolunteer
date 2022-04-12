@@ -19,6 +19,7 @@ bp = Blueprint('auth',__name__, url_prefix='/')
 
 @bp.route('/', methods=('GET', 'POST'))
 def index():
+    time_now_loc = dt.datetime.now(tz=loc)
     if request.method == 'POST':
         which_form = request.form['which_form']
         if which_form == 'login':
@@ -60,16 +61,11 @@ def index():
             time_in_loc = loc.localize(
                 dt.datetime.combine(dt.datetime.strptime(time_in_loc_st, '%Y-%m-%d').date(),
                                     dt.datetime.strptime(timeinsplittime, '%H:%M:%S').time()))
-            time_in_loc = loc.localize(
-                dt.datetime.combine(dt.datetime.strptime(time_in_loc_st, '%Y-%m-%d').date(),
-                                    dt.datetime.strptime(timeinsplittime, '%H:%M:%S').time()))
             time_in_utc = time_in_loc.astimezone(tz=utc)
             time_in_utc_st = dt.datetime.strftime(time_in_utc, '%Y-%m-%d %H:%M:%S')
             timeoutsplittime = request.form['timeoutsplittime']
-            time_out_loc_st = request.form['time_out_loc']
             time_out_loc = loc.localize(
-                 dt.datetime.combine(dt.datetime.strptime(time_out_loc_st, '%Y-%m-%d').date(),
-                                dt.datetime.strptime(timeoutsplittime, '%H:%M:%S').time()))
+                 dt.datetime.combine(dt.datetime.strptime(time_in_loc_st, '%Y-%m-%d').date(), dt.datetime.strptime(timeoutsplittime, '%H:%M:%S').time()))
             time_out_utc = time_out_loc.astimezone(tz=utc)
             time_out_utc_st = dt.datetime.strftime(time_out_utc, '%Y-%m-%d %H:%M:%S')
             db.execute(
@@ -81,7 +77,7 @@ def index():
                 (time_in_utc_st, time_out_utc_st, user_id,),
             )
             db.commit()
-            return redirect(url_for('auth.index', time_in_loc=time_in_loc, time_out_loc=time_out_loc))
+            return redirect(url_for('auth.index', time_now_loc=time_now_loc, time_in_loc=time_in_loc, time_out_loc=time_out_loc))
 
     if g.user:
         if g.user['check_in_state']:
@@ -112,6 +108,14 @@ def register():
         street_address = request.form['street-address']
         postal_code = request.form['postal-code']
         organization = request.form['organization']
+        if request.form.get('monday-email') == 'on':
+            monday_email = 1
+        else:
+            monday_email = 0
+        if request.form.get('tuesday-email') == 'on':
+            tuesday_info = 1
+        else:
+            tuesday_email = 0
         db = get_db()
         error = None
 
@@ -123,12 +127,11 @@ def register():
             error = 'Last Name is required.'
         elif not nickname:
             error = 'Preferred Name is required.'
-
-        if error is None:
+        elif error is None:
             try:
                 db.execute (
-                    "INSERT INTO user (phonenumber, honorific_prefix, given_name, family_name, honorific_suffix, pronouns, nickname, email, street_address, postal_code, organization, check_in_state, last_time_in) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
-                    (phonenumber, honorific_prefix, given_name, family_name, honorific_suffix, pronouns, nickname, email, street_address, postal_code, organization, 1,)
+                    "INSERT INTO user (phonenumber, honorific_prefix, given_name, family_name, honorific_suffix, pronouns, nickname, email, street_address, postal_code, organization, monday_email, tuesday_email, check_in_state, last_time_in) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, CURRENT_TIMESTAMP)",
+                    (phonenumber, honorific_prefix, given_name, family_name, honorific_suffix, pronouns, nickname, email, street_address, postal_code, organization, monday_email, tuesday_email, 1,)
                 )
                 db.commit()
 
@@ -161,7 +164,10 @@ def release():
     ).fetchone()
     if request.method == 'POST':
         signature_data = request.form['signature']
-        covid_immun = request.form['covid_immunization']
+        if request.form.get('covid_immunization') == 'on':
+            covid_immun = 1
+        else:
+            covid_immun = 0
         sign_date = request.form['date']
         sig_filename = "uploads/" + g.user['given_name'] + '_' + g.user['family_name'] + '_' + 'sig' + '_' + str(
             user_id) + '.svg'
@@ -176,8 +182,15 @@ def release():
         result_file = open(os.path.join(current_app.instance_path, pdf_filename), "w+b")
         pdf = pisa.CreatePDF(src=html, dest=result_file)
         result_file.close()
+
         if pdf.err:
             return pdf.err
+        else:
+            db.execute(
+                "UPDATE user SET release_name = ?, covid_immun = ? WHERE id = ? ",
+                (pdf_filename, covid_immun, user_id),
+            )
+            db.commit()
 
         #from POST png of signature canvas
         #signature = DataURI(request.form['signature'])
@@ -218,7 +231,7 @@ def checkout():
             time_in_utc_st = dt.datetime.strftime(time_in_utc, '%Y-%m-%d %H:%M:%S')
             db.execute(
                 "UPDATE user SET last_time_in = ? WHERE id = ? ",
-                (time_in_utc_st, user_id),
+                (time_in_utc_st, user_id,),
             )
             db.execute(
                 "UPDATE time_sheet SET time_in = ? WHERE user_id = ? AND ID = (SELECT max(ID) FROM time_sheet) ",
@@ -249,7 +262,15 @@ def update_info():
         street_address = request.form['street-address']
         postal_code = request.form['postal-code']
         organization = request.form['organization']
-
+        email_list = request.form.getlist('email_list')
+        if 'mon' in email_list:
+            monday_email = 1
+        else:
+            monday_email = 0
+        if 'tues' in email_list:
+            tuesday_email = 1
+        else:
+            tuesday_email = 0
         db = get_db()
 
         error = None
@@ -266,9 +287,9 @@ def update_info():
         else:
             db = get_db()
             db.execute(
-                'UPDATE user SET phonenumber = ?, honorific_prefix = ?, given_name = ?, family_name = ?, honorific_suffix = ?, pronouns = ?, nickname = ?, email = ?, street_address = ?, postal_code = ?, organization = ?, account_updated = current_timestamp'
+                'UPDATE user SET phonenumber = ?, honorific_prefix = ?, given_name = ?, family_name = ?, honorific_suffix = ?, pronouns = ?, nickname = ?, email = ?, street_address = ?, postal_code = ?, organization = ?, monday_email = ?, tuesday_email = ?, account_updated = current_timestamp'
                 ' WHERE id = ?',
-                (phonenumber, honorific_prefix, given_name, family_name, honorific_suffix, pronouns, nickname, email, street_address, postal_code, organization, user_id,)
+                (phonenumber, honorific_prefix, given_name, family_name, honorific_suffix, pronouns, nickname, email, street_address, postal_code, organization, monday_email, tuesday_email, user_id,)
             )
             db.commit()
             return redirect(url_for('auth.index'))

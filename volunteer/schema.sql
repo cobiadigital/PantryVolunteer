@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS user;
-DROP TABLE IF EXISTS profile;
 DROP TABLE IF EXISTS time_sheet;
+DROP TABLE IF EXISTS admin;
 
 CREATE TABLE user (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -16,6 +16,10 @@ CREATE TABLE user (
     postal_code TEXT,
     organization TEXT,
     check_in_state BINARY,
+    monday_email BINARY,
+    tuesday_email BINARY,
+    covid_immun BINARY,
+    release_name TEXT,
     last_time_in DATETIME NOT NULL,
     last_time_out DATETIME,
     account_activated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
