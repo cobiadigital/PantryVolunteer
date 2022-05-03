@@ -60,12 +60,12 @@ def index():
             time_in_loc_st = request.form['time_in_loc']
             time_in_loc = loc.localize(
                 dt.datetime.combine(dt.datetime.strptime(time_in_loc_st, '%Y-%m-%d').date(),
-                                    dt.datetime.strptime(timeinsplittime, '%H:%M:%S').time()))
+                                    dt.datetime.strptime(timeinsplittime, '%H:%M').time()))
             time_in_utc = time_in_loc.astimezone(tz=utc)
             time_in_utc_st = dt.datetime.strftime(time_in_utc, '%Y-%m-%d %H:%M:%S')
             timeoutsplittime = request.form['timeoutsplittime']
             time_out_loc = loc.localize(
-                 dt.datetime.combine(dt.datetime.strptime(time_in_loc_st, '%Y-%m-%d').date(), dt.datetime.strptime(timeoutsplittime, '%H:%M:%S').time()))
+                 dt.datetime.combine(dt.datetime.strptime(time_in_loc_st, '%Y-%m-%d').date(), dt.datetime.strptime(timeoutsplittime, '%H:%M').time()))
             time_out_utc = time_out_loc.astimezone(tz=utc)
             time_out_utc_st = dt.datetime.strftime(time_out_utc, '%Y-%m-%d %H:%M:%S')
             db.execute(
@@ -226,7 +226,7 @@ def checkout():
             timeinsplittime = request.form['timeinsplittime']
             time_in_loc_st = request.form['time_in_loc']
             time_in_loc = loc.localize(
-                dt.datetime.combine(dt.datetime.strptime(time_in_loc_st, '%Y-%m-%d').date(), dt.datetime.strptime(timeinsplittime, '%H:%M:%S').time()))
+                dt.datetime.combine(dt.datetime.strptime(time_in_loc_st, '%Y-%m-%d').date(), dt.datetime.strptime(timeinsplittime, '%H:%M').time()))
             time_in_utc = time_in_loc.astimezone(tz=utc)
             time_in_utc_st = dt.datetime.strftime(time_in_utc, '%Y-%m-%d %H:%M:%S')
             db.execute(
@@ -238,12 +238,12 @@ def checkout():
                 (time_in_utc_st, user_id,),
             )
             db.commit()
-
             return redirect(url_for('auth.checkout', time_in_loc=time_in_loc, time_now_loc=time_now_loc,))
 
     if g.user:
         time_in_utc = utc.localize(dt.datetime.strptime(g.user['last_time_in'], '%Y-%m-%d %H:%M:%S'))
         time_in_loc = time_in_utc.astimezone(tz=loc)
+        # time_in_loc.replace(second=0)
         return render_template('auth/checkout.html', time_in_loc=time_in_loc, time_now_loc=time_now_loc )
     return redirect(url_for('auth.index'))
 

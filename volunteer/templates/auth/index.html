@@ -31,11 +31,11 @@
                                 <div class="row align-items-center">
                                     <div class="form-floating col-6">
 
-                                        <input type="time" id="timeinsplittime" name="timeinsplittime" class="form-control" value="{{time_in_loc.time()}}" >
+                                        <input type="time" id="timeinsplittime" name="timeinsplittime" class="form-control" value="{{ time_in_loc.strftime('%H:%M') }}" >
                                         <label for="timeinsplittime">Time In</label>
                                     </div>
                                     <div class="form-floating col-6">
-                                        <input type="time" id="timeoutsplittime" name="timeoutsplittime" class="form-control" value="{{time_out_loc.time()}}" >
+                                        <input type="time" id="timeoutsplittime" name="timeoutsplittime" class="form-control" value="{{ time_out_loc.strftime('%H:%M') }}" >
                                         <label for="timeoutsplittime">Time Out</label>
                                     </div>
                                     <div class="col">
