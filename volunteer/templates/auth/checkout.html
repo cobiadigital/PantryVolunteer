@@ -22,7 +22,7 @@
                     <input type="hidden" name="time_in_loc" id="time_in_loc" value="{{time_in_loc.date()}}" >
                     <div class="row align-items-center">
                         <div class="form-floating col-5">
-                            <input type="time" id="timeinsplittime" name="timeinsplittime" class="form-control" value="{{ time_in_loc.time() }}"  step="60">
+                            <input type="time" id="timeinsplittime" name="timeinsplittime" class="form-control" value="{{ time_in_loc.strftime('%H:%M:00') }}"  step="60">
                             <label for="timeinsplittime">Time In</label>
                         </div>
                         <div class="col-4">
