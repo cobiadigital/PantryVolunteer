@@ -6,12 +6,14 @@
 {% block content %}
     {% if g.user %}
         <p class="mt-5">Hi {{ g.user['nickname'] }},</p>
-        <p> You checked in at <strong>{{ time_in_loc.strftime('%I:%M %p')}} on {{time_in_loc.strftime('%b %d') }}</strong> <br />
-           The time now is <strong>{{ time_now_loc.strftime('%I:%M %p on %b %d') }}</strong></p>
+        <p> You signed in at <strong>{{ time_in_loc.strftime('%I:%M %p')}} on {{time_in_loc.strftime('%b %d') }}</strong> <br />
+           The time now is <strong>{{ time_now_loc.strftime('%I:%M %p') }}.</strong><br />
+        (You'll be able to adjust your sign-out time once you click sign out below.) </p>
+
     <div class="accordion accordion-flush" id="accordionFlushExample">
         <div class="accordion-item">
             <div class="d-grid gap-2 d-md-flex justify-content-md-end bg-light">
-                <button class="collapsed btn btn-link text-end text-end" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                <button class="collapsed btn btn-link text-start" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
                  Update Time In
                 </button>
             </div>
