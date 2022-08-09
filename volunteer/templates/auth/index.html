@@ -8,10 +8,24 @@
           <p class="mt-5">Welcome {{ g.user['nickname'] }},</p>
 
              {% if g.user['check_in_state'] %}
-               <p>We've got you checked in at <strong>{{ time_in_loc.strftime('%I:%M %p on %b %d') }}</strong> <br />
+               <p>You signed in at <strong>{{ time_in_loc.strftime('%I:%M %p on %b %d') }}</strong> <br />
                    would you like to <a href="{{ url_for('auth.checkout') }}">sign out?</a></p>
-
-            {% else %}
+<h4>Sign in/out someone else?</h4>
+<form method="post" >
+                 <div class="row align-items-center justify-content-center">
+                     <div class="col-7">
+                         <div class="form-floating">
+                            <input type="hidden" name="which_form" id="which_form2" value="login">
+                             <input type="text" class="form-control" name="phonenumber" id="phonenumber" placeholder="2515556666" required>
+                             <label for="phonenumber">Phone Number</label>
+                         </div>
+                     </div>
+                     <div class="col-3 ">
+                        <input type="submit" value="Sign In/Out" class="btn btn-primary">
+                     </div>
+                 </div>
+             </form>
+{% else %}
                 <p> You are <strong>signed out</strong>.</p>
                <p>You last signed in at <strong>{{ time_in_loc.strftime('%I:%M %p on %b %d') }}</strong> <br />
                    and signed out at <strong>{{ time_out_loc.strftime('%I:%M %p') }}</strong></p>
@@ -50,20 +64,23 @@
                  <h4 class="text-center pt-5">Would you like to sign in again?</h4>
              <form method="post" >
                  <div class="row align-items-center justify-content-center">
-                     <div class="col-7">
+                     <div class="col-6">
                          <div class="form-floating">
                             <input type="hidden" name="which_form" id="which_form2" value="login">
                              <input type="text" class="form-control" name="phonenumber" id="phonenumber" placeholder="2515556666" required>
                              <label for="phonenumber">Phone Number</label>
                          </div>
                      </div>
-                     <div class="col-3 ">
-                        <input type="submit" value="Sign In" class="btn btn-primary">
+                     <div class="col-4 ">
+                        <input type="submit" value="Sign In/Out" class="btn btn-primary">
                      </div>
                  </div>
              </form>
            {% endif %}
+
              <h4 class="text-center mt-5">Info Verification</h4>
+              <p class="text-center">Everything looks good! <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-sml">Go back to Sign In</a></p>
+
    <p>We have the following information about you.<br />
     Phone: {{ g.user['phonenumber'] }}<br />
     Name: {{g.user['honorific_prefix'] or ''}} {{ g.user['given_name'] }} {{ g.user['family_name'] }} {{g.user['honorific_suffix'] or ''}}<br />
@@ -81,10 +98,10 @@
             <a href="{{ url_for('auth.update_info') }}" class="btn btn-text text-primary">Update Info</a></p>
     {% else %}
                 <p class="mt-5">Welcome to the Love All Food Pantry volunteer time tracker!</p>
-                <p>Please enter your phone number as all numbers like 2515556666</p>
+                <p>Please enter your phone number as all numbers (like 2515556666)</p>
     <form method="post" >
-         <div class="row align-items-center justify-content-center pb-5 my-5">
-             <div class="form-floating col-5">
+         <div class="row align-items-center justify-content-center pb-5 mt-5">
+             <div class="form-floating col-6">
                 <input type="hidden" name="which_form" id="which_form3" value="login">
                  <input type="text" class="form-control" name="phonenumber" id="phonenumber2" placeholder="2515556666" required>
                  <label for="phonenumber">Phone Number</label>
@@ -94,5 +111,12 @@
              </div>
          </div>
     </form>
+       <div class="row pb-5 mb-5">
+           <div class="col">
+               <p>If you don't have a phone number, just use the 8 digits of birthday in the form of YYYYMMDD.
+                   If your birthday is Aug 3, 1978, enter <b>19780803</b></p>
+
+               </div>
+       </div>
     {% endif %}
 {% endblock %}

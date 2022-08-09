@@ -23,6 +23,7 @@ def index():
     if request.method == 'POST':
         which_form = request.form['which_form']
         if which_form == 'login':
+            session.clear()
             phonenumber = request.form['phonenumber']
             db = get_db()
             error = None
@@ -32,11 +33,10 @@ def index():
 
             if user is None:
                 # error = 'Incorrect phonenumber.'
-                session.clear()
+                #session.clear()
                 return redirect(url_for('auth.register', phonenumber=phonenumber))
 
             if error is None:
-                session.clear()
                 session['user_id'] = user['id']
                 user_id = user['id']
                 if user['check_in_state'] == 0:
@@ -49,8 +49,8 @@ def index():
                         (user_id, 1),
                     )
                     db.commit()
-                    return redirect(url_for('auth.index'))
-
+                return redirect(url_for('auth.index'))
+                    #return render_template('auth/index.html')
             flash(error)
         elif which_form == 'update_time':
             db = get_db()

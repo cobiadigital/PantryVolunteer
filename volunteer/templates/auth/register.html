@@ -28,11 +28,12 @@
 <p>Will you please tell us a little about yourself?</p>
 <p>* indicates required items</p>
  <form method="post">
-    <div class="form-floating mb-3">
-        <input type="text" class="form-control" name="tel-national" id="tel-national" value="{{ request.args.get('phonenumber') or '' }}"  placeholder="2515551111">
+    <div class="form-floating" >
+        <input type="text" class="form-control" name="tel-national" id="tel-national" value="{{ request.args.get('phonenumber') or '' }}"  placeholder="2515551111" >
         <label for="tel-national">Phone Number *</label>
     </div>
-     <div class="row mb-1 g-1">
+     <p><small>(Birth date as 8 digits YYYYMMDD can also be used)</small></p>
+     <div class="row mb-1 g-1 mt-2">
          <div class="col-4">
              <div class="form-floating">
                 <input type="text" class="form-control" name="honorific-prefix" id="honorific-prefix" placeholder="Honorific">
