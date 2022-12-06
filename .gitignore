@@ -2,3 +2,6 @@
 /build/
 /volunteer.egg-info/
 /instance/
+*.pyc
+*.pyo
+*.sock
