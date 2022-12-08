@@ -14,13 +14,13 @@
     {{ admin_items['release']|safe }}
      <form method="post" enctype="multipart/form-data" onSubmit="submitForm();">
          <div class="form-check">
-             <input class="form-check-input" type="radio" name="covid_immunization" id="covid_immunization_yes">
+             <input class="form-check-input" type="radio" name="covid_immunization" id="covid_immunization_yes" value="1">
              <label class="form-check-label" for="covid_immunization">
                  I have had the Covid Immunization
              </label>
          </div>
          <div class="form-check">
-             <input class="form-check-input" type="radio" name="covid_immunization" id="covid_immunization_no">
+             <input class="form-check-input" type="radio" name="covid_immunization" id="covid_immunization_no" value="0">
              <label class="form-check-label" for="covid_immunization_no">
                  I have NOT had the Covid Immunization
              </label>

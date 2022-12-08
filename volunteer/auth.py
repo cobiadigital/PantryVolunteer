@@ -108,14 +108,8 @@ def register():
         street_address = request.form['street-address']
         postal_code = request.form['postal-code']
         organization = request.form['organization']
-        if request.form.get('monday-email') == 'on':
-            monday_email = 1
-        else:
-            monday_email = 0
-        if request.form.get('tuesday-email') == 'on':
-            tuesday_info = 1
-        else:
-            tuesday_email = 0
+        monday_email = request.form.get('monday-email')
+        tuesday_email = request.form.get('tuesday-email')
         db = get_db()
         error = None
 
@@ -164,10 +158,7 @@ def release():
     ).fetchone()
     if request.method == 'POST':
         signature_data = request.form['signature']
-        if request.form.get('covid_immunization') == 'on':
-            covid_immun = 1
-        else:
-            covid_immun = 0
+        covid_immun = request.form['covid_immunization']
         sign_date = request.form['date']
         sig_filename = "uploads/" + g.user['given_name'] + '_' + g.user['family_name'] + '_' + 'sig' + '_' + str(
             user_id) + '.svg'
@@ -178,7 +169,7 @@ def release():
         with open(os.path.join(current_app.instance_path, sig_filename), 'wb') as f:
             f.write(response.file.read())
         sig_location = os.path.join(current_app.instance_path, sig_filename)
-        html = render_template('auth/release_print.html', admin_items=admin_items, signature=sig_location, date=sign_date)
+        html = render_template('auth/release_print.html', admin_items=admin_items, signature=sig_location, date=sign_date, covid_immun=covid_immun)
         result_file = open(os.path.join(current_app.instance_path, pdf_filename), "w+b")
         pdf = pisa.CreatePDF(src=html, dest=result_file)
         result_file.close()

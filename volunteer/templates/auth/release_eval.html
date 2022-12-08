@@ -16,11 +16,11 @@
     </div>
   <div>
     <p>
-   {% if covid %}
+    {% if covid_immun == '1' %}
     [X] I have had the Covid Immunization<br />
-    [ &nbsp;] I have NOT had the Covid Immunization
-    {% else %}
-    [ &nbsp;] I have had the Covid Immunization <br />
+    [  ] I have NOT had the Covid Immunization
+    {% elif covid_immun == '0' %}
+    [  ] I have had the Covid Immunization <br />
     [X] I have NOT had the Covid Immunization
     {% endif %}
       </p>
