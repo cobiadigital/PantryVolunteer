@@ -3,7 +3,9 @@ import functools
 from flask import(
     current_app, Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
-from volunteer.db import get_db
+# from volunteer.db import get_db
+from .models import User, TimeSheet
+from volunteer import db
 import datetime as dt
 from datetime import timezone
 import pytz
@@ -21,38 +23,43 @@ def index():
         which_form = request.form['which_form']
         if which_form == 'login':
             phonenumber = request.form['phonenumber']
-            db = get_db()
             error = None
-            user = db.execute(
-                'SELECT * FROM user WHERE phonenumber = ?', (phonenumber,)
-            ).fetchone()
-
+            user = db.session.execute(db.select(User).filter_by(phonenumber=phonenumber)).scalar_one()
             if user is None:
                 # error = 'Incorrect phonenumber.'
                 session.clear()
                 return redirect(url_for('auth.register', phonenumber=phonenumber))
-
             if error is None:
                 session.clear()
-                session['user_id'] = user['id']
-                user_id = user['id']
+                session['user_id'] = user.id
+                user_id = user.id
                 if user['check_in_state'] == 0:
-                    db.execute(
-                        "UPDATE user SET check_in_state = ?, last_time_in = current_timestamp WHERE ID = ?",
-                        (1, user_id),
-                    )
-                    db.execute(
-                        "INSERT INTO time_sheet (user_id, check_in_state, time_in) VALUES (?, ?, current_timestamp)",
-                        (user_id, 1),
-                    )
-                    db.commit()
+                    user.check_in_state = 1
+                    user.last_time_in = dt.datetime.now(tz=utc)
+                    db.session.commit()
+                    time_sheet = TimeSheet()
+                    time_sheet.user_id = user.id
+                    time_sheet.time_in = dt.datetime.now(tz=utc)
+                    time_sheet.check_in_state = user.check_in_state
+                    db.session.add(time_sheet)
+                    db.session.commit()
+
+                    # db.session.add(user)
+                    # db.session.commit()
+                    # db.execute(
+                    #     "UPDATE user SET check_in_state = ?, last_time_in = current_timestamp WHERE ID = ?",
+                    #     (1, user_id),
+                    # )
+                    # db.execute(
+                    #     "INSERT INTO time_sheet (user_id, check_in_state, time_in) VALUES (?, ?, current_timestamp)",
+                    #     (user_id, 1),
+                    # )
+                    # db.commit()
                     return redirect(url_for('auth.index'))
 
             flash(error)
         elif which_form == 'update_time':
-            db = get_db()
             user_id = g.user['id']
-
             timeinsplittime = request.form['timeinsplittime']
             time_in_loc_st = request.form['time_in_loc']
             time_in_loc = loc.localize(
@@ -70,15 +77,17 @@ def index():
                                 dt.datetime.strptime(timeoutsplittime, '%H:%M:%S').time()))
             time_out_utc = time_out_loc.astimezone(tz=utc)
             time_out_utc_st = dt.datetime.strftime(time_out_utc, '%Y-%m-%d %H:%M:%S')
-            db.execute(
-                    "UPDATE user SET last_time_in = ?, last_time_out = ? WHERE id = ? ",
-                    (time_in_utc_st, time_out_utc_st, user_id,),
-                )
-            db.execute(
-                "UPDATE time_sheet SET time_in = ?, time_out = ?, time_modified = current_timestamp WHERE user_id = ? AND ID = (SELECT max(ID) FROM time_sheet) ",
-                (time_in_utc_st, time_out_utc_st, user_id,),
-            )
-            db.commit()
+            user = User()
+            user.id = user_id
+            last_time_in = time_in_utc_st
+            last_time_out = time_out_utc_st
+            db.sessions.update(user)
+            time_sheet = TimeSheet()
+            time_sheet.time_in = time_in_utc_st
+            time_sheet.time_out = time_out_utc_st
+            time_sheet.time_modified = dt.datetime.now(tz=utc)
+            db.session.update(time_sheet).filter_by(user_id=user_id).order_by(TimeSheet.id.desc()).first()
+            db.session.commit()
             return redirect(url_for('auth.index', time_in_loc=time_in_loc, time_out_loc=time_out_loc))
 
     if g.user:
@@ -110,7 +119,6 @@ def register():
         street_address = request.form['street-address']
         postal_code = request.form['postal-code']
         organization = request.form['organization']
-        db = get_db()
         error = None
 
         if not phonenumber:
@@ -124,25 +132,34 @@ def register():
 
         if error is None:
             try:
-                db.execute (
-                    "INSERT INTO user (phonenumber, honorific_prefix, given_name, family_name, honorific_suffix, pronouns, nickname, email, street_address, postal_code, organization, check_in_state, last_time_in) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
-                    (phonenumber, honorific_prefix, given_name, family_name, honorific_suffix, pronouns, nickname, email, street_address, postal_code, organization, 1,)
-                )
-                db.commit()
+                user = User()
+                user.phonenumber = phonenumber
+                user.honorific_prefix = honorific_prefix
+                user.given_name = given_name
+                user.family_name = family_name
+                user.honorific_suffix = honorific_suffix
+                user.pronouns = pronouns
+                user.nickname = nickname
+                user.email = email
+                user.street_address = street_address
+                user.postal_code = postal_code
+                user.organization = organization
+                user.check_in_state = 1
+                user.last_time_in = dt.datetime.now(tz=utc)
+                db.session.add(user)
+                db.session.commit()
 
             except db.IntegrityError:
                 error = f"Phone number {phonenumber} is already registered."
             else:
-                user = db.execute(
-                    'SELECT * FROM user WHERE phonenumber = ?', (phonenumber,)
-                ).fetchone()
+                user = db.session.execute(db.select(User).filter_by(phonenumber=phonenumber)).scalar_one()
                 session['user_id'] = user['id']
                 user_id = user['id']
-                db.execute(
-                    'INSERT INTO time_sheet (user_id, check_in_state, time_in) VALUES (?, ?, current_timestamp)',
-                    (user_id, 1),
-                )
-                db.commit()
+                time_sheet = TimeSheet()
+                time_sheet.user_id = user['id']
+                time_sheet.check_in_state = 1
+                time_sheet.time_in = dt.datetime.now(tz=utc)
+                db.session.add(time_sheet)
                 return redirect(url_for('auth.register'))
         flash(error)
 
@@ -163,13 +180,10 @@ def release():
             f.write(response.file.read())
 
         covid_immun = request.form['covid_immunization']
-        db = get_db()
         error = None
         return render_template('auth/release_eval.html', signature=signature_data, covid_immun=covid_immun)
     else:
         return render_template('auth/release.html')
-
-
 
 
 @bp.route('/checkout', methods=('GET', 'POST'))
@@ -180,16 +194,16 @@ def checkout():
     if request.method == 'POST':
         checkout = request.form['checkout']
         db = get_db()
+        user = User()
+        time_sheet = TimeSheet()
         if checkout == '0':
-            db.execute(
-                "UPDATE user SET check_in_state = ?, last_time_out = current_timestamp WHERE id = ? ",
-                (checkout, user_id),
-            )
-            db.execute(
-                "UPDATE time_sheet SET check_in_state = ?, time_out = current_timestamp WHERE user_id = ? AND ID = (SELECT max(ID) FROM time_sheet) ",
-                (checkout, user_id,),
-            )
-            db.commit()
+            user.check_in_state = checkout
+            user.last_time_out = dt.datetime.now(tz=utc)
+            db.session.update(user).filter_by(id=user_id)
+            time_sheet.check_in_state = checkout
+            time_sheet.time_out = dt.datetime.now(tz=utc)
+            db.session.update(time_sheet).filter_by(user_id=user_id).order_by(TimeSheet.id.desc()).first()
+            db.session.commit()
             return redirect(url_for('auth.index'))
         elif checkout == '1':
             timeinsplittime = request.form['timeinsplittime']
@@ -198,16 +212,11 @@ def checkout():
                 dt.datetime.combine(dt.datetime.strptime(time_in_loc_st, '%Y-%m-%d').date(), dt.datetime.strptime(timeinsplittime, '%H:%M:%S').time()))
             time_in_utc = time_in_loc.astimezone(tz=utc)
             time_in_utc_st = dt.datetime.strftime(time_in_utc, '%Y-%m-%d %H:%M:%S')
-            db.execute(
-                "UPDATE user SET last_time_in = ? WHERE id = ? ",
-                (time_in_utc_st, user_id),
-            )
-            db.execute(
-                "UPDATE time_sheet SET time_in = ? WHERE user_id = ? AND ID = (SELECT max(ID) FROM time_sheet) ",
-                (time_in_utc_st, user_id,),
-            )
-            db.commit()
-
+            user.last_time_in = time_in_utc_st
+            db.session.update(user).filter_by(id=user_id)
+            time_sheet.time_in = time_in_utc_st
+            db.session.update(time_sheet).filter_by(user_id=user_id).order_by(TimeSheet.id.desc()).first()
+            db.session.commit()
             return redirect(url_for('auth.checkout', time_in_loc=time_in_loc, time_now_loc=time_now_loc,))
 
     if g.user:
@@ -219,40 +228,34 @@ def checkout():
 @bp.route('/update_info', methods=('GET', 'POST'))
 def update_info():
     if request.method == 'POST':
+        user = User()
         user_id = g.user['id']
-        phonenumber = request.form['tel-national']
-        honorific_prefix = request.form['honorific-prefix']
-        given_name = request.form['given-name']
-        family_name = request.form['family-name']
-        honorific_suffix = request.form['honorific-suffix']
-        pronouns = request.form['pronouns']
-        nickname = request.form['nickname']
-        email = request.form['email']
-        street_address = request.form['street-address']
-        postal_code = request.form['postal-code']
-        organization = request.form['organization']
-
-        db = get_db()
+        user.phonenumber = request.form['tel-national']
+        user.honorific_prefix = request.form['honorific-prefix']
+        user.given_name = request.form['given-name']
+        user.family_name = request.form['family-name']
+        user.honorific_suffix = request.form['honorific-suffix']
+        user.pronouns = request.form['pronouns']
+        user.nickname = request.form['nickname']
+        user.email = request.form['email']
+        user.street_address = request.form['street-address']
+        user.postal_code = request.form['postal-code']
+        user.organization = request.form['organization']
 
         error = None
-        if not phonenumber:
+        if not user.phonenumber:
             error = 'Phone number is required.'
-        elif not given_name:
+        elif not user.given_name:
             error = 'Your name is required.'
-        elif not family_name:
+        elif not user.family_name:
             error = 'Your name is required.'
-        elif not nickname:
+        elif not user.nickname:
             error = 'Your name is required.'
         elif error is not None:
             flash(error)
         else:
-            db = get_db()
-            db.execute(
-                'UPDATE user SET phonenumber = ?, honorific_prefix = ?, given_name = ?, family_name = ?, honorific_suffix = ?, pronouns = ?, nickname = ?, email = ?, street_address = ?, postal_code = ?, organization = ?, account_updated = current_timestamp'
-                ' WHERE id = ?',
-                (phonenumber, honorific_prefix, given_name, family_name, honorific_suffix, pronouns, nickname, email, street_address, postal_code, organization, user_id,)
-            )
-            db.commit()
+            db.session.update(user).filter_by(id=user_id)
+            db.session.commit()
             return redirect(url_for('auth.index'))
 
     return render_template('auth/update_info.html')
@@ -266,9 +269,8 @@ def load_logged_in_user():
     if user_id is None:
         g.user = None
     else:
-        g.user = get_db().execute(
-            'SELECT * FROM user WHERE id = ?', (user_id,)
-        ).fetchone()
+        user = User()
+        g.user = db.session.execute(db.select(User).filter_by(id=user_id)).scalar_one()
 
 @bp.route('/logout')
 def logout():

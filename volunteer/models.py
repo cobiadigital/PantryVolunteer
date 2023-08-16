@@ -1,0 +1,41 @@
+from . import db
+
+class Admin(db.Model):
+    id: db.Mapped[int] = db.Column(db.Integer, primary_key=True)
+    username: db.Mapped[str] = db.Column(db.String)
+    password: db.Mapped[str] = db.Column(db.String)
+    release: db.Mapped[str] = db.Column(db.String)
+    time_created: db.Mapped[str] = db.Column(db.String)
+    time_modified: db.Mapped[str] = db.Column(db.String)
+
+class User(db.Model):
+    id: db.Mapped[int] = db.Column(db.Integer, primary_key=True)
+    phonenumber: db.Mapped[str] = db.Column(db.String)
+    honorific_prefix: db.Mapped[str] = db.Column(db.String)
+    given_name: db.Mapped[str] = db.Column(db.String)
+    family_name: db.Mapped[str] = db.Column(db.String)
+    honorific_suffix: db.Mapped[str] = db.Column(db.String)
+    pronouns: db.Mapped[str] = db.Column(db.String)
+    nickname: db.Mapped[str] = db.Column(db.String)
+    email: db.Mapped[str] = db.Column(db.String)
+    street_address: db.Mapped[str] = db.Column(db.String)
+    postal_code: db.Mapped[str] = db.Column(db.String)
+    organization: db.Mapped[str] = db.Column(db.String)
+    check_in_state: db.Mapped[bin] = db.Column(db.Boolean)
+    monday_email: db.Mapped[bin] = db.Column(db.Boolean)
+    tuesday_email: db.Mapped[bin] = db.Column(db.Boolean)
+    release_name: db.Mapped[str] = db.Column(db.String)
+    covid_immun: db.Mapped[bin] = db.Column(db.Boolean)
+    last_time_in: db.Mapped[str] = db.Column(db.DateTime)
+    last_time_out: db.Mapped[str] = db.Column(db.DateTime)
+    account_activated: db.Mapped[bin] = db.Column(db.DateTime)
+    account_updated: db.Mapped[bin] = db.Column(db.DateTime)
+class TimeSheet(db.Model):
+    id: db.Mapped[int] = db.Column(db.Integer, primary_key=True)
+    user_id: db.Mapped[int] = db.Column(db.Integer, db.ForeignKey("Users.id"))
+    check_in_state: db.Mapped[bin] = db.Column(db.Boolean)
+    time_in: db.Mapped[str] = db.Column(db.DateTime)
+    time_out: db.Mapped[str] = db.Column(db.DateTime)
+    time_created: db.Mapped[str] = db.Column(db.DateTime)
+    time_modified: db.Mapped[str] = db.Column(db.DateTime)
+
