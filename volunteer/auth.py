@@ -33,7 +33,7 @@ def index():
                 session.clear()
                 session['user_id'] = user.id
                 user_id = user.id
-                if user['check_in_state'] == 0:
+                if user.check_in_state == 0:
                     user.check_in_state = 1
                     user.last_time_in = dt.datetime.now(tz=utc)
                     db.session.commit()
@@ -91,8 +91,9 @@ def index():
             return redirect(url_for('auth.index', time_in_loc=time_in_loc, time_out_loc=time_out_loc))
 
     if g.user:
-        if g.user['check_in_state']:
-            time_in_utc = utc.localize(dt.datetime.strptime(g.user['last_time_in'], '%Y-%m-%d %H:%M:%S'))
+        if g.user.check_in_state == 1:
+            #time_in_utc = utc.localize(dt.datetime.strptime(g.user.last_time_in, '%Y-%m-%d %H:%M:%S'))
+            time_in_utc = utc.localize(g.user.last_time_in)
             time_in_loc = time_in_utc.astimezone(tz=loc)
             return render_template('auth/index.html', time_in_loc=time_in_loc)
         else:
@@ -188,18 +189,17 @@ def release():
 
 @bp.route('/checkout', methods=('GET', 'POST'))
 def checkout():
-    user_id = g.user['id']
+    user_id = g.user.id
     time_now_loc = dt.datetime.now(tz=loc)
 
     if request.method == 'POST':
         checkout = request.form['checkout']
-        db = get_db()
-        user = User()
+        user = db.session.execute(db.select(User).filter_by(id=user_id)).scalar_one()
         time_sheet = TimeSheet()
         if checkout == '0':
             user.check_in_state = checkout
             user.last_time_out = dt.datetime.now(tz=utc)
-            db.session.update(user).filter_by(id=user_id)
+            db.session.update(user)
             time_sheet.check_in_state = checkout
             time_sheet.time_out = dt.datetime.now(tz=utc)
             db.session.update(time_sheet).filter_by(user_id=user_id).order_by(TimeSheet.id.desc()).first()
@@ -213,14 +213,14 @@ def checkout():
             time_in_utc = time_in_loc.astimezone(tz=utc)
             time_in_utc_st = dt.datetime.strftime(time_in_utc, '%Y-%m-%d %H:%M:%S')
             user.last_time_in = time_in_utc_st
-            db.session.update(user).filter_by(id=user_id)
+            db.session.update(user)
             time_sheet.time_in = time_in_utc_st
             db.session.update(time_sheet).filter_by(user_id=user_id).order_by(TimeSheet.id.desc()).first()
             db.session.commit()
             return redirect(url_for('auth.checkout', time_in_loc=time_in_loc, time_now_loc=time_now_loc,))
 
     if g.user:
-        time_in_utc = utc.localize(dt.datetime.strptime(g.user['last_time_in'], '%Y-%m-%d %H:%M:%S'))
+        time_in_utc = utc.localize(g.user.last_time_in)
         time_in_loc = time_in_utc.astimezone(tz=loc)
         return render_template('auth/checkout.html', time_in_loc=time_in_loc, time_now_loc=time_now_loc )
     return redirect(url_for('auth.index'))
@@ -259,8 +259,6 @@ def update_info():
             return redirect(url_for('auth.index'))
 
     return render_template('auth/update_info.html')
-
-
 
 @bp.before_app_request
 def load_logged_in_user():
