@@ -82,9 +82,13 @@
     <form method="post" >
          <div class="row align-items-center justify-content-center pb-5 my-5">
              <div class="form-floating col-5">
-                <input type="hidden" name="which_form" id="which_form3" value="login">
-                 <input type="text" class="form-control" name="phonenumber" id="phonenumber2" placeholder="2515556666" required>
-                 <label for="phonenumber">Phone Number</label>
+                 {{login_form.phonenumber(class="form-control", placeholder="2515556666", required)}}
+                 {{login_form.hidden_tag()}}
+                 {{login_form.csrf_token}}
+                 {{login_form.submit(class="btn btn-primary")}}
+<!--                <input type="hidden" name="which_form" id="which_form3" value="login">-->
+<!--                 <input type="text" class="form-control" name="phonenumber" id="phonenumber2" placeholder="2515556666" required>-->
+<!--                 <label for="phonenumber">Phone Number</label>-->
              </div>
              <div class="col-3 ">
                 <input type="submit" value="Check In" class="btn btn-primary">

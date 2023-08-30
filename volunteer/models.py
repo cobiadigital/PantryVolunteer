@@ -32,7 +32,7 @@ class User(db.Model):
     account_updated: db.Mapped[bin] = db.Column(db.DateTime)
 class TimeSheet(db.Model):
     id: db.Mapped[int] = db.Column(db.Integer, primary_key=True)
-    user_id: db.Mapped[int] = db.Column(db.Integer, db.ForeignKey("User.id"))
+    user_id: db.Mapped[int] = db.Column(db.Integer, db.ForeignKey("user.id"))
     check_in_state: db.Mapped[bin] = db.Column(db.Boolean)
     time_in: db.Mapped[str] = db.Column(db.DateTime)
     time_out: db.Mapped[str] = db.Column(db.DateTime)

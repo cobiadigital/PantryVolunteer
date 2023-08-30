@@ -1,7 +1,8 @@
 import functools
 
 from flask import(
-    current_app, Blueprint, flash, g, redirect, render_template, request, session, url_for
+    current_app, Blueprint, flash, g, redirect, render_template, request,
+    session, url_for, send_file
 )
 # from volunteer.db import get_db
 from .models import User, TimeSheet
@@ -14,11 +15,18 @@ import urllib
 utc = pytz.utc
 loc = pytz.timezone('US/Central')
 
+from flask_wtf import Form
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, RadioField, HiddenField
+
+class LoginForm(Form):
+    phonenumber = StringField('Phone Number')
+    submit = SubmitField('Submit')
 
 bp = Blueprint('auth',__name__, url_prefix='/')
 
 @bp.route('/', methods=('GET', 'POST'))
 def index():
+    login_form = LoginForm()
     if request.method == 'POST':
         which_form = request.form['which_form']
         if which_form == 'login':
@@ -104,7 +112,7 @@ def index():
             return render_template('auth/index.html', time_in_loc=time_in_loc, time_out_loc=time_out_loc)
 
     else:
-        return render_template('auth/index.html')
+        return render_template('auth/index.html', login_form=login_form)
 
 @bp.route('/register', methods=('GET', 'POST'))
 def register():
@@ -164,7 +172,7 @@ def register():
                 return redirect(url_for('auth.register'))
         flash(error)
 
-    return render_template('auth/register.html')
+    return render_template('auth/register.html', login_form=login_form)
 
 @bp.route('/release', methods=('GET', 'POST'))
 def release():
@@ -284,3 +292,34 @@ def login_required(view):
         return view(**kwargs)
 
     return wrapped_view
+
+
+
+import io
+import csv
+@bp.route('/make_csv/', methods=('POST', 'GET'))
+@login_required
+def make_csv():
+    query = db.session.query(TimeSheet.time_in, TimeSheet.time_out, TimeSheet.time_modified, TimeSheet.time_created, TimeSheet.check_in_state, User.given_name, User.family_name, User.nickname, User.account_activated).join(User, User.id == TimeSheet.user_id)
+    items = db.session.execute(query).fetchall()
+    print(items)
+
+    csv_name = str(dt.datetime.now().strftime('%Y%m%d-%H%M')) + 'export.csv'
+    proxy = io.StringIO()
+
+    writer = csv.writer(proxy)
+    writer.writerows(items)
+    # Creating the byteIO object from the StringIO Object
+    mem = io.BytesIO()
+    mem.write(proxy.getvalue().encode())
+    # seeking was necessary. Python 3.5.2, Flask 0.12.2
+    mem.seek(0)
+    proxy.close()
+    return send_file(
+        mem,
+        as_attachment=True,
+        download_name=csv_name,
+        mimetype='text/csv'
+    )
+
+    return redirect(url_for('sample.index'))
